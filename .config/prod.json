@@ -1,0 +1,7 @@
+{
+  "port": 8080,
+  "cluster": {
+    "user_service_url": "http://user-service",
+    "storage_service_url": "http://storage-service"
+  }
+}
