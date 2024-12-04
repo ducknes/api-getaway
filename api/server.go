@@ -5,6 +5,7 @@ import (
 	"api-getaway/cluster/storageservice"
 	"api-getaway/cluster/userservice"
 	"api-getaway/settings"
+	"api-getaway/tools/middlewares"
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
@@ -22,7 +23,7 @@ func NewServer() *Server {
 	app.Use(cors.New(), healthcheck.New(healthcheck.Config{
 		LivenessEndpoint:  "/health",
 		ReadinessEndpoint: "/ready",
-	}), recover.New())
+	}), recover.New(), middlewares.AuthMiddleware)
 
 	return &Server{server: app}
 }

@@ -46,6 +46,10 @@ func (c *Impl) Request(ctx context.Context, method, uri string, body any, params
 	}
 
 	httpRequest, err := http.NewRequestWithContext(ctx, method, requestUrl, requestBody)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	httpRequest.Header.Add(_contentTypeHeader, _contentTypeJson)
 
 	return httpRequest, requestBody, nil
