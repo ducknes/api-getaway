@@ -2,6 +2,7 @@
   "port": 8080,
   "cluster": {
     "user_service_url": "http://user-service",
-    "storage_service_url": "http://storage-service"
+    "storage_service_url": "http://storage-service",
+    "auth_service_url" : "http://auth-service"
   }
 }

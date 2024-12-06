@@ -9,10 +9,11 @@ const (
 )
 
 type User struct {
-	Id                string `json:"id,omitempty"`
-	Surname           string `json:"surname"`
-	Name              string `json:"name"`
-	Lastname          string `json:"lastname"`
-	RegisteredObjects int    `json:"registeredObjects"`
-	Role              Role   `json:"role"`
+	Id                string `json:"id,omitempty"`      // Id пользователя
+	Username          string `json:"username"`          // Логин
+	Surname           string `json:"surname"`           // Фамилия
+	Name              string `json:"name"`              // Имя
+	Lastname          string `json:"lastname"`          // Отчетство
+	RegisteredObjects int    `json:"registeredObjects"` // Количестов подтвержленных продуктов
+	Role              Role   `json:"role"`              // Роль
 }

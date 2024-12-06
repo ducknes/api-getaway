@@ -1,0 +1,493 @@
+definitions:
+  authservice.LoginResponse:
+    properties:
+      access_token:
+        description: Токен пользователя
+        type: string
+      refresh_token:
+        description: Токен для обновления
+        type: string
+    type: object
+  authservice.LoginUser:
+    properties:
+      password:
+        description: Пароль
+        type: string
+      username:
+        description: Логин
+        type: string
+    type: object
+  storageservice.Product:
+    properties:
+      approver:
+        description: Согласующий
+        type: string
+      brandName:
+        description: Бренд кроссовок
+        type: string
+      description:
+        description: Описание модели кроссовка
+        type: string
+      factoryName:
+        description: Завод изготовитель
+        type: string
+      id:
+        description: Id продукта
+        type: string
+      images:
+        description: Картинки
+        items:
+          type: string
+        type: array
+      items:
+        description: Варианты кроссовок
+        items:
+          $ref: '#/definitions/storageservice.ProductItem'
+        type: array
+      materials:
+        description: Материалы изготовления
+        items:
+          type: string
+        type: array
+      name:
+        description: Название модели кроссовка
+        type: string
+      price:
+        description: Цена продукта
+        type: number
+      status:
+        allOf:
+        - $ref: '#/definitions/storageservice.ProductStatus'
+        description: Статус продукта
+    type: object
+  storageservice.ProductItem:
+    properties:
+      color:
+        description: Цвет
+        type: string
+      size:
+        description: Размер
+        type: integer
+      stockCount:
+        description: Кол-во на складе
+        type: integer
+      weight:
+        description: Вес
+        type: number
+    type: object
+  storageservice.ProductStatus:
+    enum:
+    - unknown
+    - waiting_approve
+    - approved
+    type: string
+    x-enum-varnames:
+    - Unknown
+    - WaitingApprove
+    - Approved
+  storageservice.Products:
+    properties:
+      cursor:
+        description: Текущий курсор
+        type: string
+      fromCache:
+        description: Из кеша
+        type: boolean
+      items:
+        description: Список продуктов
+        items:
+          $ref: '#/definitions/storageservice.Product'
+        type: array
+      limit:
+        description: Кол-во элементов
+        type: integer
+      nextCursor:
+        description: Курсор для запроса след страницы
+        type: string
+    type: object
+  userservice.Role:
+    enum:
+    - 0
+    - 1
+    - 2
+    type: integer
+    x-enum-varnames:
+    - Undefined
+    - UserRole
+    - AdminRole
+  userservice.User:
+    properties:
+      id:
+        description: Id пользователя
+        type: string
+      lastname:
+        description: Отчетство
+        type: string
+      name:
+        description: Имя
+        type: string
+      registeredObjects:
+        description: Количестов подтвержленных продуктов
+        type: integer
+      role:
+        allOf:
+        - $ref: '#/definitions/userservice.Role'
+        description: Роль
+      surname:
+        description: Фамилия
+        type: string
+      username:
+        description: Логин
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Прослойка для взаимодействия с логистическим сервисом
+  title: api-gateway
+  version: "1.0"
+paths:
+  /login:
+    post:
+      description: авторизует пользователя на сайт и возвращает токен
+      parameters:
+      - description: Данные пользователя
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/authservice.LoginUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Авторизация прошла успешно
+          schema:
+            $ref: '#/definitions/authservice.LoginResponse'
+        "400":
+          description: Некорректный запрос
+        "500":
+          description: Внутренняя ошибка сервера
+      summary: Вход
+      tags:
+      - Авторизация
+  /logout:
+    post:
+      description: разлогинивает пользователя с сайта
+      responses:
+        "200":
+          description: Выход прошел успешно
+        "400":
+          description: Некорректный запрос
+        "500":
+          description: Внутренняя ошибка сервера
+      summary: Выход
+      tags:
+      - Авторизация
+  /products:
+    delete:
+      description: Удаляет продукты из базы данных по переданным идентификаторам
+      parameters:
+      - description: Список идентификаторов продуктов для удаления
+        in: body
+        name: productIds
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      responses:
+        "200":
+          description: Удаление прошло успешно
+        "400":
+          description: Некорректный запрос
+        "401":
+          description: Неавторизован
+        "500":
+          description: Внутренняя ошибка сервера
+      security:
+      - LogisticAuth: []
+      summary: Удаление продуктов
+      tags:
+      - Продукты
+    get:
+      description: Получает определенное через limit количество продуктов
+      parameters:
+      - description: Количество получаемых продуктов
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: Ссылка на следующие продукты
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Получение прошло успешно
+          schema:
+            $ref: '#/definitions/storageservice.Products'
+        "400":
+          description: Некорректный запрос
+        "401":
+          description: Неавторизован
+        "500":
+          description: Внутренняя ошибка сервера
+      security:
+      - LogisticAuth: []
+      summary: Получение продуктов
+      tags:
+      - Продукты
+    post:
+      description: Сохраняет продукты
+      parameters:
+      - description: Сохраняемые продукты
+        in: body
+        name: products
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/storageservice.Product'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Сохранение прошло успешно
+        "400":
+          description: Некорректный запрос
+        "401":
+          description: Неавторизован
+        "500":
+          description: Внутренняя ошибка сервера
+      security:
+      - LogisticAuth: []
+      summary: Сохранение продуктов
+      tags:
+      - Продукты
+    put:
+      description: Обновляет продукты
+      parameters:
+      - description: Обновляемые продукты
+        in: body
+        name: products
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/storageservice.Product'
+          type: array
+      responses:
+        "200":
+          description: Сохранение прошло успешно
+        "400":
+          description: Некорректный запрос
+        "401":
+          description: Неавторизован
+        "500":
+          description: Внутренняя ошибка сервера
+      security:
+      - LogisticAuth: []
+      summary: Обновление продуктов
+      tags:
+      - Продукты
+  /products/one:
+    get:
+      description: Получает продукт по его идентификатору
+      parameters:
+      - description: Идентификатор продукта
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Получение прошло успешно
+          schema:
+            $ref: '#/definitions/storageservice.Product'
+        "400":
+          description: Некорректный запрос
+        "401":
+          description: Неавторизован
+        "500":
+          description: Внутренняя ошибка сервера
+      security:
+      - LogisticAuth: []
+      summary: Получение продукта
+      tags:
+      - Продукты
+  /refresh:
+    post:
+      description: обновляет токен авторизации по токену обновления
+      responses:
+        "200":
+          description: Обновление токена прошло успешно
+          schema:
+            $ref: '#/definitions/authservice.LoginResponse'
+        "400":
+          description: Некорректный запрос
+        "500":
+          description: Внутренняя ошибка сервера
+      summary: Обновление токена
+      tags:
+      - Авторизация
+  /sign-up:
+    post:
+      description: регистрирует пользователя в сервисе
+      parameters:
+      - description: Данные пользователя
+        in: body
+        name: registration
+        required: true
+        schema:
+          $ref: '#/definitions/authservice.LoginUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Регистрация прошла успешно
+          schema:
+            $ref: '#/definitions/authservice.LoginResponse'
+        "400":
+          description: Некорректный запрос
+        "500":
+          description: Внутренняя ошибка сервера
+      summary: Регистрация
+      tags:
+      - Авторизация
+  /user:
+    delete:
+      description: Удаляет пользователя по его идентификатору
+      parameters:
+      - description: Идентификатор пользователя
+        in: query
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Удаление прошло успешно
+        "400":
+          description: Некорректный запрос
+        "401":
+          description: Неавторизован
+        "500":
+          description: Внутренняя ошибка сервера
+      security:
+      - LogisticAuth: []
+      summary: Удаление пользователя
+      tags:
+      - Пользователи
+    get:
+      description: Получает пользователя по его идентификатору
+      parameters:
+      - description: Идентификатор пользователя
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Получение прошло успешно
+          schema:
+            $ref: '#/definitions/userservice.User'
+        "400":
+          description: Некорректный запрос
+        "401":
+          description: Неавторизован
+        "500":
+          description: Внутренняя ошибка сервера
+      security:
+      - LogisticAuth: []
+      summary: Получение пользователя
+      tags:
+      - Пользователи
+    post:
+      description: Сохраняет нового пользователя
+      parameters:
+      - description: Сохраняемый пользователь
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/userservice.User'
+      responses:
+        "200":
+          description: Сохранение прошло успешно
+        "400":
+          description: Некорректный запрос
+        "401":
+          description: Неавторизован
+        "500":
+          description: Внутренняя ошибка сервера
+      security:
+      - LogisticAuth: []
+      summary: Сохранение пользователя
+      tags:
+      - Пользователи
+    put:
+      description: Обновляет пользователя
+      parameters:
+      - description: Обновляемый пользователь
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/userservice.User'
+      responses:
+        "200":
+          description: Обновление прошло успешно
+        "400":
+          description: Некорректный запрос
+        "401":
+          description: Неавторизован
+        "500":
+          description: Внутренняя ошибка сервера
+      security:
+      - LogisticAuth: []
+      summary: Обновление пользователя
+      tags:
+      - Пользователи
+  /user/many:
+    get:
+      description: Получает определенное в limit количество пользователей
+      parameters:
+      - description: Количество пользователей
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: Ссылка на следующих пользователей
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Получение прошло успешно
+          schema:
+            items:
+              $ref: '#/definitions/userservice.User'
+            type: array
+        "400":
+          description: Некорректный запрос
+        "401":
+          description: Неавторизован
+        "500":
+          description: Внутренняя ошибка сервера
+      security:
+      - LogisticAuth: []
+      summary: Получение пользователей
+      tags:
+      - Пользователи
+securityDefinitions:
+  LogisticAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

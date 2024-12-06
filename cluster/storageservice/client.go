@@ -8,11 +8,11 @@ import (
 )
 
 const (
-	_getProductUri     = "/product"
-	_getProductsUri    = "/products"
-	_saveProductsUri   = "/products"
-	_updateProductsUri = "/products"
-	_deleteProductsUri = "/products"
+	_getProductUri     = "product"
+	_getProductsUri    = "products"
+	_saveProductsUri   = "products"
+	_updateProductsUri = "products"
+	_deleteProductsUri = "products"
 )
 
 type Client struct {
@@ -38,7 +38,7 @@ func (c *Client) GetProduct(ctx context.Context, productId string) (product Prod
 	return product, c.httpClient.Do(httpRequest, body, &product)
 }
 
-func (c *Client) GetProducts(ctx context.Context, limit int, cursor string) (products []Product, err error) {
+func (c *Client) GetProducts(ctx context.Context, limit int, cursor string) (products Products, err error) {
 	params := map[string]string{
 		"limit":  strconv.Itoa(limit),
 		"cursor": cursor,

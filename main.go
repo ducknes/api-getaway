@@ -12,6 +12,13 @@ import (
 	"github.com/GOAT-prod/goatlogger"
 )
 
+// @title api-gateway
+// @version 1.0
+// @description Прослойка для взаимодействия с логистическим сервисом
+// @securityDefinitions.apikey LogisticAuth
+// @in header
+// @name Authorization
+
 func main() {
 	logger := goatlogger.New(settings.AppName())
 	logger.SetTag("app")

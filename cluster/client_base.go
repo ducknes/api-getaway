@@ -17,6 +17,7 @@ const (
 type BaseClient interface {
 	Request(ctx context.Context, method, url string, body any, params map[string]string) (*http.Request, *bytes.Buffer, error)
 	Do(request *http.Request, body *bytes.Buffer, response any) error
+	SetCookie(r *http.Request, cookie map[string]string)
 }
 
 type Impl struct {
@@ -74,6 +75,12 @@ func (c *Impl) Do(request *http.Request, body *bytes.Buffer, response any) error
 	}
 
 	return nil
+}
+
+func (c *Impl) SetCookie(r *http.Request, cookie map[string]string) {
+	for k, v := range cookie {
+		r.AddCookie(&http.Cookie{Name: k, Value: v})
+	}
 }
 
 func (c *Impl) prepareUrl(uri string, params map[string]string) (string, error) {

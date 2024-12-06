@@ -8,11 +8,11 @@ import (
 )
 
 const (
-	_getUserUri    = "/user"
-	_getUsersUri   = "/users"
-	_saveUserUri   = "/user"
-	_updateUserUri = "/user"
-	_deleteUserUri = "/user"
+	_getUserUri    = "user"
+	_getUsersUri   = "users"
+	_saveUserUri   = "user"
+	_updateUserUri = "user"
+	_deleteUserUri = "user"
 )
 
 type Client struct {

@@ -33,8 +33,6 @@ func validateToken(token string) error {
 		return errors.New("invalid token")
 	}
 
-	fmt.Println(os.Getenv("JWT_SECRET"))
-
 	jwtToken, err := jwt.Parse(splitToken[1], func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
