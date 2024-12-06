@@ -37,7 +37,7 @@ func (c *Impl) Request(ctx context.Context, method, uri string, body any, params
 		return nil, nil, err
 	}
 
-	var requestBody *bytes.Buffer
+	requestBody := &bytes.Buffer{}
 	if body != nil {
 		requestBody, err = toBytes(body)
 		if err != nil {

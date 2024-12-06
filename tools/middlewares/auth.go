@@ -7,6 +7,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"os"
 	"strings"
+	"time"
 )
 
 func AuthMiddleware(c *fiber.Ctx) error {
@@ -32,16 +33,32 @@ func validateToken(token string) error {
 		return errors.New("invalid token")
 	}
 
-	_, err := jwt.Parse(splitToken[1], func(token *jwt.Token) (interface{}, error) {
+	fmt.Println(os.Getenv("JWT_SECRET"))
+
+	jwtToken, err := jwt.Parse(splitToken[1], func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 
-		return os.Getenv("JWT_SECRET"), nil
+		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 
 	if err != nil {
 		return err
+	}
+
+	tokenClaims, ok := jwtToken.Claims.(jwt.MapClaims)
+	if !ok || !jwtToken.Valid {
+		return errors.New("invalid token")
+	}
+
+	exp, ok := tokenClaims["exp"].(float64)
+	if !ok {
+		return errors.New("invalid token")
+	}
+
+	if time.Now().Unix() > int64(exp) {
+		return errors.New("token expired")
 	}
 
 	return nil
